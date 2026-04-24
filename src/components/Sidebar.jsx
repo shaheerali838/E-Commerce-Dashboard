@@ -1,4 +1,4 @@
-import { React, useState } from "react";
+import React from "react";
 import SideBarList from "./UI/SideBarList";
 
 let main = [
@@ -20,9 +20,7 @@ let pages = [
   "Table",
 ];
 let settings = ["Settings", "Login"];
-const Sidebar = () => {
-  const [isActive, setIsActive] = useState("Dashboard");
-
+const Sidebar = ({ activePage, setActivePage }) => {
   return (
     <>
       <aside className="flex flex-col  w-full align-center items-center h-screen column">
@@ -32,19 +30,19 @@ const Sidebar = () => {
 
         <SideBarList
           lists={main}
-          isActive={isActive}
-          setIsActive={setIsActive}
+          activePage={activePage}
+          setActivePage={setActivePage}
         />
         <SideBarList
           title={"Pages"}
           lists={pages}
-          isActive={isActive}
-          setIsActive={setIsActive}
+          activePage={activePage}
+          setActivePage={setActivePage}
         />
         <SideBarList
           lists={settings}
-          isActive={isActive}
-          setIsActive={setIsActive}
+          activePage={activePage}
+          setActivePage={setActivePage}
         />
       </aside>
     </>
