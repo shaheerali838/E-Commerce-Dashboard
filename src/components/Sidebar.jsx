@@ -1,7 +1,8 @@
 import React from "react";
 import SideBarList from "./UI/SideBarList";
+import { useNavigate } from "react-router-dom";
 
-let main = [
+const main = [
   "Dashboard",
   "Products",
   "Favorites",
@@ -9,7 +10,7 @@ let main = [
   "Order Lists",
   "Product Stock",
 ];
-let pages = [
+const pages = [
   "Pricing",
   "Calendar",
   "To-Do",
@@ -19,31 +20,28 @@ let pages = [
   "Team",
   "Table",
 ];
-let settings = ["Settings", "Login"];
-const Sidebar = ({ activePage, setActivePage }) => {
+const settings = ["Settings", "Login"];
+const Sidebar = () => {
+  const navigate = useNavigate();
+
+  const handleNavigate = (path) => {
+    navigate(path);
+  };
+
   return (
     <>
-      <aside className="flex flex-col  w-full align-center items-center h-screen column">
+      <aside className="flex flex-col  w-full align-center items-center h-screen column overflow-y-scroll">
         <div className="logo  mt-2 mb-2  text-xs  md:text-3xl">
           <h1>E-Commerce</h1>
         </div>
 
-        <SideBarList
-          lists={main}
-          activePage={activePage}
-          setActivePage={setActivePage}
-        />
+        <SideBarList lists={main} onNavigate={handleNavigate} />
         <SideBarList
           title={"Pages"}
           lists={pages}
-          activePage={activePage}
-          setActivePage={setActivePage}
+          onNavigate={handleNavigate}
         />
-        <SideBarList
-          lists={settings}
-          activePage={activePage}
-          setActivePage={setActivePage}
-        />
+        <SideBarList lists={settings} onNavigate={handleNavigate} />
       </aside>
     </>
   );
