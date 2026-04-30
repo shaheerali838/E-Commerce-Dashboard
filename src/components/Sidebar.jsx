@@ -31,10 +31,6 @@ const Sidebar = () => {
   return (
     <>
       <aside className="flex flex-col  w-full align-center items-center h-screen column overflow-y-scroll">
-        <div className="logo  mt-2 mb-2  text-xs  md:text-3xl">
-          <h1>E-Commerce</h1>
-        </div>
-
         <SideBarList lists={main} onNavigate={handleNavigate} />
         <SideBarList
           title={"Pages"}

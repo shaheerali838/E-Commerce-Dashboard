@@ -3,3 +3,11 @@
 * {
     font-family: 'Poppins', sans-serif;
 }
+
+svg {
+    outline: none !important;
+}
+
+.recharts-surface {
+    outline: none !important;
+}

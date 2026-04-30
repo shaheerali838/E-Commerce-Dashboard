@@ -23,10 +23,10 @@ const SideBarList = ({ lists, title }) => {
               <li
                 key={index}
                 className={`mb-3 cursor-pointer px-4 py-2 rounded-lg font-semibold transition-all uppercase ${
-                  formatPath(tabs) === tabs
+                  formatPath(tabs) === location.pathname && isActive
                     ? "bg-indigo-500 text-white shadow"
                     : "text-gray-800 hover:bg-gray-200 hover:text-gray-800"
-                } `}
+                }`}
                 onClick={() => navigate(targetPath)}
               >
                 {tabs}
