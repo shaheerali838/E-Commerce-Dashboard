@@ -5,6 +5,7 @@ import { FaBoxOpen } from "react-icons/fa";
 import { FaChartLine } from "react-icons/fa6";
 import { TfiReload } from "react-icons/tfi";
 import IndexLineChart from "../components/Chart";
+import DealsDetails from "../components/DealsDetails";
 
 const reloadIcon = <TfiReload />;
 const chartIcon = <FaChartLine />;
@@ -14,11 +15,11 @@ const profileIcon = <CgProfile />;
 const Dashboard = () => {
   return (
     <>
-      <div className="pl-15 pt-5 w-full flex flex-col justify-center gap-8">
+      <div className="pl-15 pt-5 pr-15 w-full flex flex-col justify-center gap-8">
         <div className="text-2xl font-bold">
           <h1>Dashboard</h1>
         </div>
-        <div className="flex w-full justify-start gap-5  flex-wrap">
+        <div className="flex w-full justify-around gap-5  flex-wrap">
           <DataCard
             title={"Total Users"}
             value={"1000"}
@@ -45,8 +46,12 @@ const Dashboard = () => {
           />
         </div>
 
-        <div className="w-full h-full outline-none pr-15">
+        <div className="w-full h-full outline-none ">
           <IndexLineChart />
+        </div>
+
+        <div className="p-5">
+          <DealsDetails />
         </div>
       </div>
     </>
