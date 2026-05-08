@@ -30,7 +30,7 @@ const Sidebar = () => {
 
   return (
     <>
-      <aside className="flex flex-col  w-full align-center items-center h-screen column overflow-y-scroll">
+      <aside className="flex flex-col  w-full align-center items-center h-screen column ">
         <SideBarList lists={main} onNavigate={handleNavigate} />
         <SideBarList
           title={"Pages"}

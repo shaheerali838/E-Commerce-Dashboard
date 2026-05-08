@@ -9,7 +9,12 @@ import {
 import AdminLogin from "./pages/AdminLogin.jsx";
 import ProtectedRoute from "./components/ProtectedRoute";
 import Dashboard from "./pages/Dashboard.jsx";
+import Products from "./pages/Products.jsx";
 import Layout from "./components/Layout/Layout.jsx";
+import Favorites from "./pages/Favorites.jsx";
+import Inbox from "./pages/Inbox.jsx";
+import OrderLists from "./pages/OrderList.jsx";
+import ProductStock from "./pages/ProductStock.jsx";
 
 function App() {
   const router = createBrowserRouter([
@@ -36,23 +41,23 @@ function App() {
         },
         {
           path: "/products",
-          element: <h1>Products</h1>,
+          element: <Products />,
         },
         {
           path: "/favorites",
-          element: <h1>Favorites</h1>,
+          element: <Favorites />,
         },
         {
           path: "/inbox",
-          element: <h1>Inbox</h1>,
+          element: <Inbox />,
         },
         {
           path: "/order-lists",
-          element: <h1>Order Lists</h1>,
+          element: <OrderLists />,
         },
         {
           path: "/product-stock",
-          element: <h1>Product Stock</h1>,
+          element: <ProductStock />,
         },
       ],
     },

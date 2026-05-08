@@ -8,7 +8,7 @@ const SideBarList = ({ lists, title }) => {
 
   return (
     <>
-      <div className="w-full flex flex-col justify-center items-center border-b h-screen border-gray-300">
+      <div className="w-full flex flex-col justify-center items-center border-b h-fit border-gray-300">
         {title && (
           <h1 className="text-sm mt-8 font-bold text-gray-500 -ml-24">
             {title}

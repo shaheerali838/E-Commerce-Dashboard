@@ -1,48 +1,110 @@
 import React from "react";
 
 const DealsDetails = () => {
-  return (
-    <>
-      <div className="w-full bg-white p-4">
-        <div className=" w-full bg-white rounded-lg flex justify-between items-center pl-3 pr-3">
-          <h4 className="text-2xl font-bold text-gray-900 py-3 px-3">
-            Deals Details
-          </h4>
-          <select
-            name="month"
-            id="month"
-            className="text-lg py-2 px-4 outline-none rounded-xl bg-gray-100 "
-          >
-            <option value="">This Month</option>
-            <option value="">Last Month</option>
-            <option value="">This Year</option>
-          </select>
-        </div>
+  // Mock data to demonstrate dynamic rendering
+  const deals = [
+    {
+      id: 1,
+      product: "Apple Watch",
+      location: "New York",
+      dateTime: "10:30 AM - 12 May 2026",
+      pieces: 1,
+      amount: "$450",
+      status: "Delivered",
+    },
+    {
+      id: 2,
+      product: "iPhone 15 Pro",
+      location: "London",
+      dateTime: "02:15 PM - 12 May 2026",
+      pieces: 2,
+      amount: "$2,400",
+      status: "Pending",
+    },
+    {
+      id: 3,
+      product: "MacBook Air",
+      location: "Tokyo",
+      dateTime: "09:00 AM - 11 May 2026",
+      pieces: 1,
+      amount: "$1,200",
+      status: "Cancelled",
+    },
+  ];
 
-        <table className="w-[95%] mx-auto rounded-lg overflow-hidden">
-          <thead className="bg-gray-200 rounded-2xl text-center mb-3 ">
-            <tr className="rounded-lg [&_th]:py-2 ">
-              <th className="">Product Name</th>
-              <th className="">Location</th>
-              <th className="">Date - Time</th>
-              <th className="">Piece</th>
-              <th className="">Amount</th>
-              <th className="">Status</th>
+  // Helper to style the status badge
+  const getStatusStyles = (status) => {
+    switch (status) {
+      case "Delivered":
+        return "bg-green-100 text-green-700";
+      case "Pending":
+        return "bg-orange-100 text-orange-700";
+      case "Cancelled":
+        return "bg-red-100 text-red-700";
+      default:
+        return "bg-gray-100 text-gray-700";
+    }
+  };
+
+  return (
+    <div className="w-full bg-white p-6 rounded-xl shadow-sm">
+      {/* Header Section */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
+        <h4 className="text-2xl font-bold text-gray-900">Deals Details</h4>
+        <select
+          name="month"
+          id="month"
+          className="text-sm font-medium py-2 px-4 outline-none rounded-lg bg-gray-50 border border-gray-200 hover:bg-gray-100 transition-colors cursor-pointer"
+        >
+          <option value="this-month">This Month</option>
+          <option value="last-month">Last Month</option>
+          <option value="this-year">This Year</option>
+        </select>
+      </div>
+
+      {/* Table Container for Horizontal Scrolling on Mobile */}
+      <div className="overflow-x-auto">
+        <table className="w-full text-left border-separate border-spacing-y-2">
+          <thead>
+            <tr className="bg-gray-50 text-gray-500 uppercase text-xs font-semibold tracking-wider">
+              <th className="px-6 py-4 rounded-l-lg">Product Name</th>
+              <th className="px-6 py-4">Location</th>
+              <th className="px-6 py-4">Date - Time</th>
+              <th className="px-6 py-4">Piece</th>
+              <th className="px-6 py-4">Amount</th>
+              <th className="px-6 py-4 rounded-r-lg">Status</th>
             </tr>
           </thead>
-          <tbody className="bg-white rounded-lg text-center">
-            <tr>
-              <td className="px-2"></td>
-              <td className="px-2">Location</td>
-              <td className="px-2">Date - Time</td>
-              <td className="px-2">Piece</td>
-              <td className="px-2">Amount</td>
-              <td className="px-2">Status</td>
-            </tr>
+          <tbody className="divide-y divide-gray-50">
+            {deals.map((deal) => (
+              <tr
+                key={deal.id}
+                className="hover:bg-gray-50 transition-colors group"
+              >
+                <td className="px-6 py-4 font-medium text-gray-900">
+                  {deal.product}
+                </td>
+                <td className="px-6 py-4 text-gray-600">{deal.location}</td>
+                <td className="px-6 py-4 text-gray-600 text-sm">
+                  {deal.dateTime}
+                </td>
+                <td className="px-6 py-4 text-gray-600">{deal.pieces}</td>
+                <td className="px-6 py-4 font-semibold text-gray-900">
+                  {deal.amount}
+                </td>
+                <td className="px-6 py-4">
+                  <span
+                    className={`px-3 py-1 rounded-full text-xs font-bold ${getStatusStyles(deal.status)}`}
+                  >
+                    {deal.status}
+                  </span>
+                </td>
+              </tr>
+            ))}
           </tbody>
         </table>
       </div>
-    </>
+    </div>
   );
 };
 
