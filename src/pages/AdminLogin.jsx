@@ -1,9 +1,11 @@
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
-import { auth } from "../firebase/config";
-import { signInWithEmailAndPassword } from "firebase/auth";
+import { auth, db } from "../firebase/config";
+import { signInWithEmailAndPassword, signOut } from "firebase/auth";
 import { useNavigate } from "react-router-dom";
+import { doc, getDoc } from "firebase/firestore";
+import { useState } from "react";
 
 // Yup validation schema
 const schema = yup
@@ -15,21 +17,33 @@ const schema = yup
 
 const AdminLogin = () => {
   const navigate = useNavigate();
+  const [submitError, setSubmitError] = useState(null);
   const {
     register,
     handleSubmit,
-    formState: { errors },
+    formState: { errors, isSubmitting },
   } = useForm({
     resolver: yupResolver(schema),
   });
 
   const onSubmit = async (data) => {
+    setSubmitError(null);
     try {
-      await signInWithEmailAndPassword(auth, data.email, data.password);
-      navigate("/dashboard"); // Redirect to dashboard on success
+      const cred = await signInWithEmailAndPassword(
+        auth,
+        data.email,
+        data.password,
+      );
+      const userDoc = await getDoc(doc(db, "users", cred.user.uid)); // Redirect to dashboard on success
+      if (!userDoc.exists() || userDoc.data().role !== "admin") {
+        await signOut(auth);
+        setSubmitError("Invalid credentials or not an admin.");
+        return;
+      }
+      navigate("/dashboard");
     } catch (error) {
       console.error("Failed to login", error);
-      alert("Invalid credentials or not an admin.");
+      setSubmitError("Invalid credentials or not an admin.");
     }
   };
 
@@ -42,7 +56,11 @@ const AdminLogin = () => {
         <h2 className="text-2xl font-bold mb-6 text-center text-gray-800">
           Admin Login
         </h2>
-
+        {submitError && (
+          <div className="mb-4 px-3 py-2 rounded-md bg-red-50 border border-red-200 text-red-600 text-sm">
+            {submitError}
+          </div>
+        )}
         <div className="mb-4">
           <label className="block text-gray-700 mb-2">Email</label>
           <input
@@ -66,9 +84,10 @@ const AdminLogin = () => {
 
         <button
           type="submit"
-          className="w-full bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700 transition"
+          disabled={isSubmitting}
+          className="w-full bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700 transition disabled:opacity-60"
         >
-          Login
+          {isSubmitting ? "Signing in..." : "Login"}
         </button>
       </form>
     </div>
