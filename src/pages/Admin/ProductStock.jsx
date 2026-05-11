@@ -16,7 +16,7 @@ import {
   Filter,
   Loader2,
 } from "lucide-react";
-import { useProductStock } from "../hooks/useProductStock";
+import { useProductStock } from "../../hooks/useProductStock";
 
 const STOCK_FILTERS = ["All", "In Stock", "Low Stock", "Out of Stock"];
 const PAGE_SIZE = 8;

@@ -22,7 +22,7 @@ const salesData = [
 
 export default function IndexLineChart() {
   return (
-    <div className="w-full h-100 !focus:outline-none">
+    <div className="w-full h-96 !focus:outline-none">
       {/* ResponsiveContainer makes the chart scale perfectly to its parent div */}
       <ResponsiveContainer className={"h-full w-full "}>
         <LineChart

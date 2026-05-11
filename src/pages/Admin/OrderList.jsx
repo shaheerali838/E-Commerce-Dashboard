@@ -16,7 +16,7 @@ import {
   Loader2,
   AlertTriangle,
 } from "lucide-react";
-import { useOrderList } from "../hooks/useOrderList";
+import { useOrderList } from "../../hooks/useOrderList";
 
 const ORDER_STATUS = ["All", "Completed", "Processing", "Rejected"];
 const PAGE_SIZE = 8;

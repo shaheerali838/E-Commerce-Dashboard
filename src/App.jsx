@@ -1,67 +1,70 @@
 import {
-  BrowserRouter as Router,
-  Routes,
-  Route,
-  Navigate,
   createBrowserRouter,
   RouterProvider,
+  Navigate,
 } from "react-router-dom";
-import AdminLogin from "./pages/AdminLogin.jsx";
-import ProtectedRoute from "./components/ProtectedRoute";
-import Dashboard from "./pages/Dashboard.jsx";
-import Products from "./pages/Products.jsx";
-import Layout from "./components/Layout/Layout.jsx";
-import Favorites from "./pages/Favorites.jsx";
-import Inbox from "./pages/Inbox.jsx";
-import OrderLists from "./pages/OrderList.jsx";
-import ProductStock from "./pages/ProductStock.jsx";
+
+// Admin Imports (Updated to match your /pages/Admin/ folder)
+import AdminLogin from "./pages/Admin/AdminLogin.jsx";
+import Dashboard from "./pages/Admin/dashboard.jsx";
+import Products from "./pages/Admin/Products.jsx";
+import Favorites from "./pages/Admin/Favorites.jsx";
+import Inbox from "./pages/Admin/Inbox.jsx";
+import OrderLists from "./pages/Admin/OrderList.jsx";
+import ProductStock from "./pages/Admin/ProductStock.jsx";
+
+// Components
+import ProtectedRoute from "./components/ProtectedRoute.jsx";
+import AdminLayout from "./components/Layout/AdminLayout.jsx";
+import PublicLayout from "./components/Layout/PublicLayout.jsx";
+
+// Public Storefront Imports (Updated to match your /pages/StoreFront/ folder)
+import Home from "./pages/StoreFront/Home.jsx";
+import Shop from "./pages/StoreFront/Shop.jsx";
+import Cart from "./pages/StoreFront/Cart.jsx";
 
 function App() {
   const router = createBrowserRouter([
-    {
-      path: "/admin",
-      element: <AdminLogin />,
-    },
+    // 1. PUBLIC STOREFRONT ROUTES
     {
       path: "/",
+      element: <PublicLayout />,
+      children: [
+        { index: true, element: <Home /> },
+        { path: "shop", element: <Shop /> },
+        { path: "cart", element: <Cart /> },
+      ],
+    },
+
+    // 2. ADMIN AUTHENTICATION
+    {
+      path: "/admin/login",
+      element: <AdminLogin />,
+    },
+
+    // 3. PROTECTED ADMIN DASHBOARD ROUTES
+    {
+      path: "/admin",
       element: (
         <ProtectedRoute>
-          <Layout />
+          <AdminLayout />
         </ProtectedRoute>
       ),
-
       children: [
         {
           index: true,
-          element: <Navigate to="/dashboard" replace />,
+          element: <Navigate to="/admin/admin/dashboard" replace />,
         },
-        {
-          path: "/dashboard",
-          element: <Dashboard />,
-        },
-        {
-          path: "/products",
-          element: <Products />,
-        },
-        {
-          path: "/favorites",
-          element: <Favorites />,
-        },
-        {
-          path: "/inbox",
-          element: <Inbox />,
-        },
-        {
-          path: "/order-lists",
-          element: <OrderLists />,
-        },
-        {
-          path: "/product-stock",
-          element: <ProductStock />,
-        },
+        { path: "dashboard", element: <Dashboard /> },
+        { path: "products", element: <Products /> },
+        { path: "favorites", element: <Favorites /> },
+        { path: "inbox", element: <Inbox /> },
+        { path: "order-lists", element: <OrderLists /> },
+        { path: "product-stock", element: <ProductStock /> },
       ],
     },
   ]);
+
   return <RouterProvider router={router} />;
 }
 

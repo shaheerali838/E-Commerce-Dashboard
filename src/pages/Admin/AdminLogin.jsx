@@ -1,7 +1,7 @@
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
-import { auth, db } from "../firebase/config";
+import { auth, db } from "../../firebase/config";
 import { signInWithEmailAndPassword, signOut } from "firebase/auth";
 import { useNavigate } from "react-router-dom";
 import { doc, getDoc } from "firebase/firestore";
@@ -40,7 +40,7 @@ const AdminLogin = () => {
         setSubmitError("Invalid credentials or not an admin.");
         return;
       }
-      navigate("/dashboard");
+      navigate("/admin/dashboard");
     } catch (error) {
       console.error("Failed to login", error);
       setSubmitError("Invalid credentials or not an admin.");

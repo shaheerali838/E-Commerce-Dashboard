@@ -1,11 +1,11 @@
 import React, { useState } from "react";
-import DataCard from "../components/DataCard";
+import DataCard from "../../components/DataCard";
 import { CgProfile } from "react-icons/cg";
 import { FaBoxOpen } from "react-icons/fa";
 import { FaChartLine } from "react-icons/fa6";
 import { TfiReload } from "react-icons/tfi";
-import IndexLineChart from "../components/Chart";
-import DealsDetails from "../components/DealsDetails";
+import IndexLineChart from "../../components/Chart";
+import DealsDetails from "../../components/DealsDetails";
 
 const reloadIcon = <TfiReload />;
 const chartIcon = <FaChartLine />;

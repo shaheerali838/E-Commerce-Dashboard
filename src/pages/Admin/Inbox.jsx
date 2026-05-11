@@ -22,7 +22,7 @@ import {
   Loader2,
   RefreshCw,
 } from "lucide-react";
-import { useInbox } from "../hooks/useInbox";
+import { useInbox } from "../../hooks/useInbox";
 
 // ── Label config ──────────────────────────────────────────────────────────────
 const labelStyles = {
