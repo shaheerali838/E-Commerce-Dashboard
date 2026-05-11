@@ -1,55 +1,116 @@
-# Implementation Roadmap: E-Commerce Admin Dashboard
+Goal
 
-This roadmap outlines the necessary steps to align your current repository (`shaheerali838/e-commerce-dashboard`) with the professional standards and technical requirements specified in the **Ecommerce Dashboard Details.pdf** [cite: 1].
+Implement Section 2 of roadmap.md (Advanced Data Handling) for products and orders, with these decisions locked:
 
----
+Non-realtime useQuery / useInfiniteQuery + getDocs (no onSnapshot).
 
-## 1. Security & Admin Authentication
+"Load More" pagination (replaces page numbers).
 
-Currently, your app allows any authenticated user to access the dashboard [cite: 19, 22]. You must restrict this to authorized administrators.
+Add Product flow built as a separate modal alongside the Edit modal.
 
-- **Define Admin Roles:** Update your Firestore `users` collection to include a `role` field. Only users with `role: "admin"` should be granted access [cite: 1, 18].
-- **Enhance `ProtectedRoute.jsx`:** Update this component to fetch the user's document from Firestore and verify the `admin` role before rendering dashboard content [cite: 1, 22].
-- **Firestore Security Rules:** Implement rules in the Firebase Console to ensure only authenticated admins can `write`, `update`, or `delete` products and orders [cite: 1, 202, 203].
+Architecture
 
----
+flowchart LR
+subgraph App
+Main["main.jsx"] --> QCP["QueryClientProvider"]
+QCP --> Pages["Pages (ProductStock, OrderList)"]
+end
+Pages -->|"useInfiniteQuery"| Hooks["useProducts / useOrders"]
+Hooks -->|"getDocs + startAfter"| FS[(Firestore)]
+Pages -->|"useMutation"| Hooks
+Hooks -->|"invalidateQueries"| QC["QueryCache"]
+QC --> Pages
 
-## 2. Advanced Data Handling
+Current state (relevant)
 
-Transition from basic state management to a scalable architecture designed for high-performance business apps.
+src/hooks/useProductStock.js and src/hooks/useOrderList.js use onSnapshot and download the entire collection.
 
-- **Implement TanStack Query (React Query):** Integrate this for all Firestore data fetching [cite: 1, 47]. This will handle automatic caching, background updates, and reduce redundant API calls to Firebase [cite: 1, 189].
-- **Form Validation:** Replace basic state-based inputs in `AdminLogin.jsx` and product forms with **React Hook Form** and **Yup** [cite: 1, 48, 49]. This ensures that only valid data enters your system [cite: 1, 92, 195].
-- **Pagination:** Update your `useOrderList` and `useProductStock` hooks to fetch data in chunks using Firestore's `limit()` and `startAfter()` methods to support thousands of records efficiently [cite: 1, 211, 215].
+src/pages/ProductStock.jsx and src/pages/OrderList.jsx paginate client-side via .slice() and have page-number buttons.
 
----
+The "Add Product" button at line ~393 of ProductStock is a no-op.
 
-## 3. Mandatory Backend Integrations
+EditModal in ProductStock.jsx uses useState form state, no validation.
 
-These features are essential for the dashboard to function as a "real business" system [cite: 1, 5].
+Changes
 
-- **Cloudinary for Media:** Integrate Cloudinary to handle product image and category banner uploads [cite: 1, 34, 35]. Store the returned image URLs in Firestore [cite: 1, 74, 81].
-- **Notification System:** Implement **Firebase Cloud Messaging (FCM)** to trigger real-time browser alerts for the admin when a new order is placed or stock levels are low [cite: 1, 28, 30, 31].
-- **Email System (Nodemailer):** Set up a backend service (e.g., Firebase Cloud Functions) using **Nodemailer** to send order confirmations and status updates to customers automatically [cite: 1, 39, 41, 44].
+1. Install + wire TanStack Query
 
----
+Add @tanstack/react-query to package.json.
 
-## 4. Business Logic & Analytics
+In src/main.jsx wrap <App /> in <QueryClientProvider client={queryClient}>, inside <AuthProvider>.
 
-Move beyond static displays to an interactive, data-driven management system.
+Defaults: staleTime: 30_000, refetchOnWindowFocus: false, retry: 1.
 
-- **Automated Inventory Management:** Update your order processing logic to automatically decrement product `stockQuantity` in Firestore whenever an order is fulfilled [cite: 1, 155].
-- **Real-Time Analytics:** Replace placeholder charts in `Chart.jsx` with **Recharts** or **Chart.js** [cite: 1, 50, 145]. These must reflect dynamic data for:
-  - Sales revenue over time [cite: 1, 146].
-  - Category distribution of products [cite: 1, 148].
-- **Low Stock Alerts:** Add logic to flag products in the UI and notify the admin when stock falls below a specific threshold [cite: 1, 158, 159].
+2. New hook: src/hooks/useProducts.js (delete useProductStock.js)
 
----
+useProducts(pageSize = 20): useInfiniteQuery({ queryKey: ['products'], queryFn, getNextPageParam }).
 
-## 5. Performance & Reliability
+queryFn({ pageParam }): query(collection(db, 'products'), orderBy('createdAt', 'desc'), startAfter(pageParam), limit(pageSize)) (omit startAfter for the first page); returns { items, lastDoc }.
 
-Ensure the app remains stable and fast under load.
+getNextPageParam(lastPage): returns lastPage.lastDoc if items.length === pageSize, else undefined.
 
-- **Error Handling:** Implement robust error boundaries and clear user-facing messages for network failures or API issues [cite: 1, 192, 197].
-- **Lazy Loading:** Use `React.lazy()` for route-based code splitting to improve the initial loading speed of the dashboard [cite: 1, 212].
-- **Data Export:** Add a feature to export order and user lists into **CSV/Excel** format for external reporting [cite: 1, 222, 223].
+useAddProduct(): addDoc(... , { ...data, createdAt: serverTimestamp() }) + invalidate ['products'].
+
+useUpdateProduct(): updateDoc(... , { ...data, updatedAt: serverTimestamp() }) + invalidate.
+
+useDeleteProduct(): deleteDoc(...) + invalidate.
+
+3. New hook: src/hooks/useOrders.js (delete useOrderList.js)
+
+useOrders(pageSize = 20): same useInfiniteQuery pattern over orders.
+
+useUpdateOrderStatus(): updateDoc(... , { status, updatedAt }) + invalidate.
+
+4. Refactor src/pages/ProductStock.jsx
+
+Switch to useProducts(); flatten data.pages to a single products array via useMemo.
+
+Remove page-number pagination; replace with a Load More button (disabled when !hasNextPage, "Loading..." when isFetchingNextPage).
+
+Add a caveat note above filters: "Filters and search apply to loaded products. Click Load More to fetch more."
+
+Refactor EditModal to RHF + Yup: useForm({ resolver: yupResolver(productSchema), defaultValues: product }), inline field errors.
+
+New AddProductModal (RHF + Yup, empty defaults). Wire it to the existing Add Product button.
+
+Replace direct mutations with useAddProduct, useUpdateProduct, useDeleteProduct.
+
+5. Refactor src/pages/OrderList.jsx
+
+Switch to useOrders(); flatten pages; remove page-number pagination; add Load More.
+
+Same caveat note above filters.
+
+Wire OrderDetail's status buttons to useUpdateOrderStatus.
+
+6. Yup schema
+
+const productSchema = yup.object({
+name: yup.string().trim().required("Name is required"),
+category: yup.string().required("Category is required"),
+price: yup.number().typeError("Price must be a number").min(0).required(),
+piece: yup
+.number()
+.typeError("Stock must be a number")
+.integer()
+.min(0)
+.required(),
+});
+
+Place inline in ProductStock.jsx for now; can be extracted to src/lib/schemas.js later.
+
+Out of scope
+
+useInbox refactor.
+
+Server-side filtering/sorting (would require Firestore composite indexes).
+
+firestore.rules (deferred from Section 1).
+
+Sections 3-5 of the roadmap.
+
+Caveats to surface during implementation
+
+No live updates: another admin's changes won't appear until refetch.
+
+Filter scope: client-side filters only see loaded pages; user must Load More to filter further.
