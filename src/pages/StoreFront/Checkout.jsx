@@ -1,5 +1,6 @@
 import React, { useState } from "react";
-import { db } from "../firebase/config";
+import { useCart } from "../../context/CartContext";
+import { db } from "../../firebase/config";
 import {
   collection,
   addDoc,
@@ -32,7 +33,6 @@ const Checkout = () => {
     setIsProcessing(true);
 
     try {
-      // Prepared as a batch operation to ensure data consistency
       const batch = writeBatch(db);
 
       // 1. Create the new Order Document
@@ -50,7 +50,6 @@ const Checkout = () => {
       });
 
       // 2. Loop through cart items and decrement stock in the Products collection
-      // This fulfills the Inventory Sync requirement
       cartItems.forEach((item) => {
         const productRef = doc(db, "products", item.id);
         batch.update(productRef, {

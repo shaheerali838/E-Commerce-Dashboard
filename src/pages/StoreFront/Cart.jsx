@@ -40,7 +40,7 @@ const Cart = () => {
                   className="p-6 flex flex-col sm:flex-row items-center gap-6"
                 >
                   {/* Item Image */}
-                  <div className="w-24 h-24 bg-slate-100 rounded-md overflow-hidden flex-shrink-0">
+                  <div className="w-24 h-24 bg-slate-100 rounded-md overflow-hidden shrink-0">
                     {item.imageUrl ? (
                       <img
                         src={item.imageUrl}
@@ -130,9 +130,10 @@ const Cart = () => {
               </div>
             </div>
 
+            {/* Change this button inside Cart.jsx */}
             <button
               className="w-full bg-slate-900 text-white py-3 rounded-md font-medium hover:bg-blue-600 transition-colors"
-              onClick={() => alert("Checkout Flow Coming Next!")}
+              onClick={() => navigate("/checkout")} // Use React Router's navigate here (ensure you imported useNavigate)
             >
               Proceed to Checkout
             </button>

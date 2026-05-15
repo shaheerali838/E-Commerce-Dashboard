@@ -4,7 +4,28 @@ import { useLocation, useNavigate } from "react-router-dom";
 const SideBarList = ({ lists, title }) => {
   const navigate = useNavigate();
   const location = useLocation();
-  const formatPath = (name) => `/${name.toLowerCase().replace(/\s+/g, "-")}`;
+  const formatPath = (name) =>
+    `/admin/${name.toLowerCase().replace(/\s+/g, "-")}`;
+
+  import { db } from "../firebase/config";
+  import { collection, addDoc } from "firebase/firestore";
+  import { sampleProducts } from "../data/sampleProducts";
+
+  export const seedDatabase = async () => {
+    try {
+      const productsCollection = collection(db, "products");
+
+      // Loop through the sample products and add each to Firestore
+      for (const product of sampleProducts) {
+        await addDoc(productsCollection, product);
+      }
+
+      alert("Database seeded successfully with sample products!");
+    } catch (error) {
+      console.error("Error seeding database: ", error);
+      alert("Failed to seed database. Check console for errors.");
+    }
+  };
 
   return (
     <>
@@ -34,6 +55,7 @@ const SideBarList = ({ lists, title }) => {
             );
           })}
         </ul>
+        <button onClick={seedDatabase}>Seed Database</button>
       </div>
     </>
   );

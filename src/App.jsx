@@ -22,6 +22,7 @@ import PublicLayout from "./components/Layout/PublicLayout.jsx";
 import Home from "./pages/StoreFront/Home.jsx";
 import Shop from "./pages/StoreFront/Shop.jsx";
 import Cart from "./pages/StoreFront/Cart.jsx";
+import Checkout from "./pages/StoreFront/Checkout.jsx";
 
 function App() {
   const router = createBrowserRouter([
@@ -33,6 +34,7 @@ function App() {
         { index: true, element: <Home /> },
         { path: "shop", element: <Shop /> },
         { path: "cart", element: <Cart /> },
+        { path: "checkout", element: <Checkout /> },
       ],
     },
 
@@ -53,7 +55,7 @@ function App() {
       children: [
         {
           index: true,
-          element: <Navigate to="/admin/admin/dashboard" replace />,
+          element: <Navigate to="/admin/dashboard" replace />,
         },
         { path: "dashboard", element: <Dashboard /> },
         { path: "products", element: <Products /> },
