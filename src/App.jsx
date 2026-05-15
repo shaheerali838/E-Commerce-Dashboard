@@ -17,12 +17,14 @@ import ProductStock from "./pages/Admin/ProductStock.jsx";
 import ProtectedRoute from "./components/ProtectedRoute.jsx";
 import AdminLayout from "./components/Layout/AdminLayout.jsx";
 import PublicLayout from "./components/Layout/PublicLayout.jsx";
+import ErrorBoundary from "./components/ErrorBoundary.jsx";
 
 // Public Storefront Imports (Updated to match your /pages/StoreFront/ folder)
 import Home from "./pages/StoreFront/Home.jsx";
 import Shop from "./pages/StoreFront/Shop.jsx";
 import Cart from "./pages/StoreFront/Cart.jsx";
 import Checkout from "./pages/StoreFront/Checkout.jsx";
+import NotFound from "./pages/NotFound.jsx";
 
 function App() {
   const router = createBrowserRouter([
@@ -65,9 +67,19 @@ function App() {
         { path: "product-stock", element: <ProductStock /> },
       ],
     },
+
+    // 4. CATCH-ALL 404 ROUTE
+    {
+      path: "*",
+      element: <NotFound />,
+    },
   ]);
 
-  return <RouterProvider router={router} />;
+  return (
+    <ErrorBoundary>
+      <RouterProvider router={router} />
+    </ErrorBoundary>
+  );
 }
 
 export default App;

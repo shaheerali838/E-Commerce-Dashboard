@@ -1,10 +1,11 @@
 import React from "react";
 import { useCart } from "../../context/CartContext";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 const Cart = () => {
   const { cartItems, removeFromCart, updateQuantity, clearCart, cartTotal } =
     useCart();
+  const navigate = useNavigate();
 
   if (cartItems.length === 0) {
     return (

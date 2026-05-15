@@ -1,164 +1,94 @@
-import React, { useState } from "react";
-import { db } from "../firebase/config";
-import {
-  collection,
-  addDoc,
-  doc,
-  writeBatch,
-  serverTimestamp,
-} from "firebase/firestore";
-import { useNavigate } from "react-router-dom";
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useCallback,
+  useEffect,
+} from "react";
 
-const Checkout = () => {
-  const { cartItems, cartTotal, clearCart } = useCart();
-  const navigate = useNavigate();
-  const [isProcessing, setIsProcessing] = useState(false);
+const CartContext = createContext();
 
-  const [formData, setFormData] = useState({
-    name: "",
-    email: "",
-    address: "",
-    city: "",
-  });
-
-  const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-  };
-
-  const handleCheckout = async (e) => {
-    e.preventDefault();
-    if (cartItems.length === 0) return alert("Your cart is empty!");
-
-    setIsProcessing(true);
-
-    try {
-      // Prepared as a batch operation to ensure data consistency
-      const batch = writeBatch(db);
-
-      // 1. Create the new Order Document
-      const orderRef = await addDoc(collection(db, "orders"), {
-        customerInfo: formData,
-        items: cartItems.map((item) => ({
-          productId: item.id,
-          name: item.name,
-          price: item.price,
-          quantity: item.quantity,
-        })),
-        totalAmount: cartTotal,
-        status: "Pending",
-        createdAt: serverTimestamp(),
-      });
-
-      // 2. Loop through cart items and decrement stock in the Products collection
-      // This fulfills the Inventory Sync requirement
-      cartItems.forEach((item) => {
-        const productRef = doc(db, "products", item.id);
-        batch.update(productRef, {
-          stockQuantity: item.stockQuantity - item.quantity,
-        });
-      });
-
-      // 3. Commit the batch
-      await batch.commit();
-
-      clearCart();
-      alert(`Order placed successfully! Order ID: ${orderRef.id}`);
-      navigate("/shop");
-    } catch (error) {
-      console.error("Error processing checkout: ", error);
-      alert("There was an error processing your order.");
-    } finally {
-      setIsProcessing(false);
-    }
-  };
-
-  if (cartItems.length === 0) {
-    return (
-      <div className="text-center py-20 text-xl font-bold">
-        Your cart is empty.
-      </div>
-    );
+export const useCart = () => {
+  const context = useContext(CartContext);
+  if (!context) {
+    throw new Error("useCart must be used within a CartProvider");
   }
-
-  return (
-    <div className="max-w-3xl mx-auto px-4 py-12">
-      <h1 className="text-3xl font-bold text-slate-900 mb-8">Checkout</h1>
-
-      <div className="bg-white border border-slate-200 rounded-lg p-6 shadow-sm">
-        <div className="mb-8 border-b border-slate-200 pb-4">
-          <h2 className="text-xl font-semibold mb-2">Order Summary</h2>
-          <p className="text-slate-600">Total Items: {cartItems.length}</p>
-          <p className="text-2xl font-bold text-blue-600 mt-2">
-            Total: ${cartTotal.toFixed(2)}
-          </p>
-        </div>
-
-        <form onSubmit={handleCheckout} className="space-y-4">
-          <h2 className="text-xl font-semibold mb-4">Shipping Details</h2>
-
-          <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">
-              Full Name
-            </label>
-            <input
-              required
-              type="text"
-              name="name"
-              onChange={handleChange}
-              className="w-full px-3 py-2 border rounded-md outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">
-              Email
-            </label>
-            <input
-              required
-              type="email"
-              name="email"
-              onChange={handleChange}
-              className="w-full px-3 py-2 border rounded-md outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">
-              Address
-            </label>
-            <input
-              required
-              type="text"
-              name="address"
-              onChange={handleChange}
-              className="w-full px-3 py-2 border rounded-md outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">
-              City
-            </label>
-            <input
-              required
-              type="text"
-              name="city"
-              onChange={handleChange}
-              className="w-full px-3 py-2 border rounded-md outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
-
-          <button
-            type="submit"
-            disabled={isProcessing}
-            className="w-full mt-6 bg-slate-900 text-white py-3 rounded-md font-bold hover:bg-blue-600 transition-colors disabled:bg-slate-400"
-          >
-            {isProcessing ? "Processing Order..." : "Confirm & Pay"}
-          </button>
-        </form>
-      </div>
-    </div>
-  );
+  return context;
 };
 
-export default Checkout;
+export const CartProvider = ({ children }) => {
+  const [cartItems, setCartItems] = useState([]);
+
+  // Load cart from localStorage on mount
+  useEffect(() => {
+    const savedCart = localStorage.getItem("cart");
+    if (savedCart) {
+      try {
+        setCartItems(JSON.parse(savedCart));
+      } catch (error) {
+        console.error("Failed to load cart from localStorage:", error);
+      }
+    }
+  }, []);
+
+  // Save cart to localStorage whenever it changes
+  useEffect(() => {
+    localStorage.setItem("cart", JSON.stringify(cartItems));
+  }, [cartItems]);
+
+  const addToCart = useCallback((product) => {
+    setCartItems((prevItems) => {
+      const existingItem = prevItems.find((item) => item.id === product.id);
+
+      if (existingItem) {
+        return prevItems.map((item) =>
+          item.id === product.id
+            ? { ...item, quantity: item.quantity + (product.quantity || 1) }
+            : item,
+        );
+      }
+
+      return [...prevItems, { ...product, quantity: product.quantity || 1 }];
+    });
+  }, []);
+
+  const removeFromCart = useCallback((productId) => {
+    setCartItems((prevItems) =>
+      prevItems.filter((item) => item.id !== productId),
+    );
+  }, []);
+
+  const updateQuantity = useCallback((productId, delta) => {
+    setCartItems((prevItems) =>
+      prevItems
+        .map((item) =>
+          item.id === productId
+            ? { ...item, quantity: Math.max(1, item.quantity + delta) }
+            : item,
+        )
+        .filter((item) => item.quantity > 0),
+    );
+  }, []);
+
+  const clearCart = useCallback(() => {
+    setCartItems([]);
+  }, []);
+
+  const cartTotal = cartItems.reduce(
+    (total, item) => total + item.price * item.quantity,
+    0,
+  );
+
+  const cartValue = {
+    cartItems,
+    addToCart,
+    removeFromCart,
+    updateQuantity,
+    clearCart,
+    cartTotal,
+  };
+
+  return (
+    <CartContext.Provider value={cartValue}>{children}</CartContext.Provider>
+  );
+};
