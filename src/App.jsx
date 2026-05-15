@@ -6,7 +6,7 @@ import {
 
 // Admin Imports (Updated to match your /pages/Admin/ folder)
 import AdminLogin from "./pages/Admin/AdminLogin.jsx";
-import Dashboard from "./pages/Admin/dashboard.jsx";
+import Dashboard from "./pages/Admin/Dashboard.jsx";
 import Products from "./pages/Admin/Products.jsx";
 import Favorites from "./pages/Admin/Favorites.jsx";
 import Inbox from "./pages/Admin/Inbox.jsx";
