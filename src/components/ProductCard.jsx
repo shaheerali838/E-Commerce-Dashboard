@@ -10,14 +10,20 @@ const ProductCard = ({
   rating,
   reviews,
   discount,
+  isFavorite: initialIsFavorite = false,
   onFavorite,
   onEdit,
   onDelete,
 }) => {
-  const [isFavorite, setIsFavorite] = useState(false);
+  const [localFavorite, setLocalFavorite] = useState(initialIsFavorite);
+
+  // Sync with prop if it changes
+  React.useEffect(() => {
+    setLocalFavorite(initialIsFavorite);
+  }, [initialIsFavorite]);
 
   const handleFavorite = () => {
-    setIsFavorite(!isFavorite);
+    setLocalFavorite(!localFavorite);
     onFavorite?.();
   };
 
@@ -54,7 +60,7 @@ const ProductCard = ({
           <Heart
             size={20}
             className={
-              isFavorite ? "fill-red-500 text-red-500" : "text-gray-400"
+              localFavorite ? "fill-red-500 text-red-500" : "text-gray-400"
             }
           />
         </button>

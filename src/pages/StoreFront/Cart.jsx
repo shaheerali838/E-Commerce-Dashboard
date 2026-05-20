@@ -1,10 +1,12 @@
 import React from "react";
 import { useCart } from "../../context/CartContext";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 const Cart = () => {
   const { cartItems, removeFromCart, updateQuantity, clearCart, cartTotal } =
     useCart();
+  const navigate = useNavigate();
+
 
   if (cartItems.length === 0) {
     return (
@@ -77,7 +79,8 @@ const Cart = () => {
                     </span>
                     <button
                       onClick={() => updateQuantity(item.id, 1)}
-                      className="w-8 h-8 flex items-center justify-center text-slate-600 hover:bg-slate-200 rounded transition-colors"
+                      disabled={item.quantity >= (item.piece ?? item.stockQuantity ?? Infinity)}
+                      className="w-8 h-8 flex items-center justify-center text-slate-600 hover:bg-slate-200 rounded transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
                     >
                       +
                     </button>
@@ -133,7 +136,7 @@ const Cart = () => {
             {/* Change this button inside Cart.jsx */}
             <button
               className="w-full bg-slate-900 text-white py-3 rounded-md font-medium hover:bg-blue-600 transition-colors"
-              onClick={() => navigate("/checkout")} // Use React Router's navigate here (ensure you imported useNavigate)
+              onClick={() => navigate("/checkout")}
             >
               Proceed to Checkout
             </button>

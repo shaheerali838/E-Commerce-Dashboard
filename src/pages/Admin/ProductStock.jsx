@@ -48,7 +48,7 @@ const getStockLevel = (piece) => {
 };
 
 const fmt = (n) =>
-  `$${n.toLocaleString("en-US", { minimumFractionDigits: 2 })}`;
+  `$${(Number(n) || 0).toLocaleString("en-US", { minimumFractionDigits: 2 })}`;
 
 // ── Stat Card ─────────────────────────────────────────────────────────────────
 const StatCard = ({ label, value, icon: Icon, color, bg, sub }) => (
@@ -275,7 +275,7 @@ const ProductStock = () => {
 
   // Derive categories dynamically from Firestore data
   const CATEGORIES = useMemo(() => {
-    const cats = [...new Set(products.map((p) => p.category))].sort();
+    const cats = [...new Set(products.map((p) => p.category || "Uncategorized"))].sort();
     return ["All", ...cats];
   }, [products]);
 
@@ -301,11 +301,11 @@ const ProductStock = () => {
     if (search)
       data = data.filter(
         (p) =>
-          p.name.toLowerCase().includes(search.toLowerCase()) ||
-          p.category.toLowerCase().includes(search.toLowerCase()),
+          (p.name || "").toLowerCase().includes(search.toLowerCase()) ||
+          (p.category || "Uncategorized").toLowerCase().includes(search.toLowerCase()),
       );
     if (catFilter !== "All")
-      data = data.filter((p) => p.category === catFilter);
+      data = data.filter((p) => (p.category || "Uncategorized") === catFilter);
     if (stockFilter !== "All") {
       data = data.filter((p) => {
         const s = getStockLevel(p.piece).label;
@@ -566,11 +566,11 @@ const ProductStock = () => {
                           {fmt(product.price)}
                         </td>
                         <td className="px-6 py-4 text-sm font-semibold text-gray-700">
-                          {product.piece.toLocaleString()}
+                          {(product.piece || 0).toLocaleString()}
                         </td>
                         <td className="px-6 py-4">
                           <div className="flex items-center gap-1.5">
-                            {product.colors.map((color, i) => (
+                            {(product.colors || []).map((color, i) => (
                               <span
                                 key={i}
                                 className="w-4 h-4 rounded-full border border-black/10 shadow-sm shrink-0"

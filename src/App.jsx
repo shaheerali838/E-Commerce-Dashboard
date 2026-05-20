@@ -8,7 +8,7 @@ import {
 import AdminLogin from "./pages/Admin/AdminLogin.jsx";
 import Dashboard from "./pages/Admin/Dashboard.jsx";
 import Products from "./pages/Admin/Products.jsx";
-import Favorites from "./pages/Admin/Favorites.jsx";
+
 import Inbox from "./pages/Admin/Inbox.jsx";
 import OrderLists from "./pages/Admin/OrderList.jsx";
 import ProductStock from "./pages/Admin/ProductStock.jsx";
@@ -59,7 +59,7 @@ function App() {
         },
         { path: "dashboard", element: <Dashboard /> },
         { path: "products", element: <Products /> },
-        { path: "favorites", element: <Favorites /> },
+
         { path: "inbox", element: <Inbox /> },
         { path: "order-lists", element: <OrderLists /> },
         { path: "product-stock", element: <ProductStock /> },

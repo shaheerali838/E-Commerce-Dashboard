@@ -1,11 +1,9 @@
 import React from "react";
-import DataCard from "../DataCard";
 import Sidebar from "../Sidebar";
 import Navbar from "../Navbar";
-import Dashboard from "../../pages/Admin/dashboard";
 import { Outlet } from "react-router-dom";
 
-const AdminLayout = ({ children }) => {
+const AdminLayout = () => {
   return (
     <>
       <div className="grid grid-cols-12 grid-rows-12 gap-0 bg-[#F5F6FA] h-screen!">

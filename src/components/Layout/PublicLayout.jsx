@@ -1,23 +1,30 @@
-import React from "react";
+import React, { useState } from "react";
 import { Outlet } from "react-router-dom";
-// You will eventually create a PublicNavbar, but for now, we'll use a placeholder
-// import PublicNavbar from "../PublicNavbar";
+import PublicNavbar from "./PublicNavbar";
+import PublicSidebar from "./PublicSidebar";
 
 const PublicLayout = () => {
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+
   return (
-    <div className="min-h-screen flex flex-col bg-white">
-      {/* <PublicNavbar /> */}
-      <header className="p-4 border-b">
-        <h1 className="text-xl font-bold">My E-Commerce Store</h1>
-      </header>
+    <div className="min-h-screen flex flex-col bg-slate-50 font-sans selection:bg-indigo-100 selection:text-indigo-900">
+      <PublicNavbar onOpenSidebar={() => setIsSidebarOpen(true)} />
+      <PublicSidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
 
       <main className="grow">
-        {/* This is where the Home, Shop, and Cart pages will render */}
         <Outlet />
       </main>
 
-      <footer className="p-4 bg-gray-100 text-center">
-        <p>&copy; 2026 E-Commerce. All rights reserved.</p>
+      <footer className="py-8 px-6 bg-white border-t border-slate-200 mt-auto">
+        <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
+          <div className="flex items-center gap-2">
+             <div className="w-6 h-6 bg-slate-900 rounded flex items-center justify-center text-white text-[10px] font-bold">EC</div>
+             <span className="font-semibold text-slate-800">E-Commerce Store</span>
+          </div>
+          <p className="text-sm text-slate-500 font-medium">
+            &copy; {new Date().getFullYear()} All rights reserved.
+          </p>
+        </div>
       </footer>
     </div>
   );

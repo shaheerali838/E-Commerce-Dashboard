@@ -14,12 +14,19 @@ export const useProductStock = () => {
 
   // Real-time listener
   useEffect(() => {
-    setLoading(true);
-    const q = query(collection(db, COL), orderBy("createdAt", "desc"));
+    let isMounted = true;
+    setTimeout(() => {
+      if (isMounted) setLoading(true);
+    }, 0);
+
+    const q = query(collection(db, COL));
     const unsub = onSnapshot(
       q,
       (snap) => {
-        setProducts(snap.docs.map((d) => ({ id: d.id, ...d.data() })));
+        const data = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+        // Client-side sort by createdAt descending
+        data.sort((a, b) => (b.createdAt?.seconds ?? 0) - (a.createdAt?.seconds ?? 0));
+        setProducts(data);
         setLoading(false);
       },
       (err) => { setError(err.message); setLoading(false); }

@@ -5,7 +5,6 @@ import { useNavigate } from "react-router-dom";
 const main = [
   "Dashboard",
   "Products",
-  "Favorites",
   "Inbox",
   "Order Lists",
   "Product Stock",
@@ -21,6 +20,7 @@ const pages = [
   "Table",
 ];
 const settings = ["Settings", "Login"];
+
 const Sidebar = () => {
   const navigate = useNavigate();
 
@@ -29,8 +29,7 @@ const Sidebar = () => {
   };
 
   return (
-    <>
-      <aside className="flex flex-col  w-full align-center items-center h-screen column ">
+      <aside className="flex flex-col w-full align-center items-center h-full column border-r border-gray-200 bg-white shadow-sm">
         <SideBarList lists={main} onNavigate={handleNavigate} />
         <SideBarList
           title={"Pages"}
@@ -39,7 +38,6 @@ const Sidebar = () => {
         />
         <SideBarList lists={settings} onNavigate={handleNavigate} />
       </aside>
-    </>
   );
 };
 

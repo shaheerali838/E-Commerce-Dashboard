@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import {
   CartesianGrid,
   Line,
@@ -9,24 +10,42 @@ import {
   ResponsiveContainer,
 } from "recharts";
 
-// 1. Upgraded E-Commerce Data
-const salesData = [
-  { month: "Jan", sales: 4000, visitors: 2400 },
-  { month: "Feb", sales: 3000, visitors: 1398 },
-  { month: "Mar", sales: 5000, visitors: 9800 },
-  { month: "Apr", sales: 4780, visitors: 3908 },
-  { month: "May", sales: 5890, visitors: 4800 },
-  { month: "Jun", sales: 4390, visitors: 3800 },
-  { month: "Jul", sales: 6490, visitors: 4300 },
-];
+export default function IndexLineChart({ orders = [] }) {
+  // Aggregate revenue by month for the last 6 months
+  const chartData = useMemo(() => {
+    const dataMap = {};
+    const now = new Date();
+    
+    // Initialize last 6 months with 0
+    for (let i = 5; i >= 0; i--) {
+      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      const month = d.toLocaleString("default", { month: "short" });
+      dataMap[month] = { month, sales: 0, orders: 0 };
+    }
 
-export default function IndexLineChart() {
+    orders.forEach((order) => {
+      if (!order.createdAt) return;
+      // Convert firestore timestamp or iso string to Date
+      const date = order.createdAt?.toDate ? order.createdAt.toDate() : new Date(order.createdAt);
+      
+      // If order is older than 6 months, skip
+      if (now - date > 6 * 30 * 24 * 60 * 60 * 1000) return;
+
+      const month = date.toLocaleString("default", { month: "short" });
+      if (dataMap[month]) {
+        dataMap[month].sales += Number(order.totalAmount) || 0;
+        dataMap[month].orders += 1;
+      }
+    });
+
+    return Object.values(dataMap);
+  }, [orders]);
+
   return (
     <div className="w-full h-96 !focus:outline-none">
-      {/* ResponsiveContainer makes the chart scale perfectly to its parent div */}
-      <ResponsiveContainer className={"h-full w-full "}>
+      <ResponsiveContainer className={"h-full w-full"}>
         <LineChart
-          data={salesData}
+          data={chartData}
           margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
         >
           <CartesianGrid
@@ -34,52 +53,54 @@ export default function IndexLineChart() {
             strokeDasharray="5 5"
             vertical={false}
           />
-
           <XAxis
             dataKey="month"
             stroke="#6b7280"
             tick={{ fill: "#6b7280" }}
             tickMargin={10}
           />
-
           <YAxis
+            yAxisId="left"
             stroke="#6b7280"
             tick={{ fill: "#6b7280" }}
-            // Formats the Y-axis numbers to look like currency (e.g., $4000)
             tickFormatter={(value) => `$${value}`}
           />
+          <YAxis
+            yAxisId="right"
+            orientation="right"
+            stroke="#6b7280"
+            tick={{ fill: "#6b7280" }}
+          />
 
-          {/* 2. Tooltip shows the details on hover! */}
           <Tooltip
             contentStyle={{
               backgroundColor: "#ffffff",
               borderRadius: "8px",
-              border: "none",
+              border: "1px solid #f3f4f6",
               boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)",
             }}
             formatter={(value, name) => [
-              name === "Total Sales" ? `$${value}` : value,
+              name === "Total Revenue" ? `$${Number(value).toFixed(2)}` : value,
               name,
             ]}
           />
-
           <Legend wrapperStyle={{ paddingTop: "20px" }} />
 
-          {/* 3. Fixed Line Colors using exact Hex Codes */}
           <Line
+            yAxisId="left"
             type="monotone"
             dataKey="sales"
-            name="Total Sales"
-            stroke="#4f46e5" // Tailwind Indigo-600
+            name="Total Revenue"
+            stroke="#8b5cf6" // Purple
             strokeWidth={3}
             activeDot={{ r: 8 }}
           />
-
           <Line
+            yAxisId="right"
             type="monotone"
-            dataKey="visitors"
-            name="Store Visitors"
-            stroke="#10b981" // Tailwind Emerald-500
+            dataKey="orders"
+            name="Orders Count"
+            stroke="#10b981" // Emerald
             strokeWidth={3}
           />
         </LineChart>

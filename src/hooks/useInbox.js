@@ -10,7 +10,6 @@ import {
   deleteDoc,
   doc,
   serverTimestamp,
-  getDocs,
 } from "firebase/firestore";
 import { db } from "../firebase/config";
 import { useAuth } from "../context/AuthContext";
@@ -25,11 +24,11 @@ const buildQuery = (userId, folder) => {
   const base = emailsRef();
   switch (folder) {
     case "Starred":
-      return query(base, where("userId", "==", userId), where("starred", "==", true), orderBy("createdAt", "desc"));
+      return query(base, where("userId", "==", userId), where("starred", "==", true));
     case "Important":
-      return query(base, where("userId", "==", userId), where("important", "==", true), orderBy("createdAt", "desc"));
+      return query(base, where("userId", "==", userId), where("important", "==", true));
     default:
-      return query(base, where("userId", "==", userId), where("folder", "==", folder), orderBy("createdAt", "desc"));
+      return query(base, where("userId", "==", userId), where("folder", "==", folder));
   }
 };
 
@@ -45,15 +44,27 @@ export const useInbox = () => {
 
   // Real-time listener — re-runs whenever activeNav changes
   useEffect(() => {
-    if (!userId) return;
-    setLoading(true);
-    setError(null);
+    if (!userId) {
+      setLoading(false);
+      return;
+    }
+    // Set loading asynchronously to avoid synchronous setState during render
+    let isMounted = true;
+    setTimeout(() => {
+      if (isMounted) {
+        setLoading(true);
+        setError(null);
+      }
+    }, 0);
 
     const q = buildQuery(userId, activeNav);
     const unsub = onSnapshot(
       q,
       (snap) => {
-        setEmails(snap.docs.map((d) => ({ id: d.id, ...d.data() })));
+        const data = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+        // Client-side sort by createdAt descending
+        data.sort((a, b) => (b.createdAt?.seconds ?? 0) - (a.createdAt?.seconds ?? 0));
+        setEmails(data);
         setLoading(false);
       },
       (err) => {

@@ -1,164 +1,78 @@
-import React, { createContext, useContext, useState } from "react";
-import { db } from "../firebase/config";
-import {
-  collection,
-  addDoc,
-  doc,
-  writeBatch,
-  serverTimestamp,
-} from "firebase/firestore";
-import { useNavigate } from "react-router-dom";
+import { createContext, useContext, useState, useCallback } from "react";
+
+// 1. Create the context
+const CartContext = createContext();
+
+// 2. Export the hook
 export const useCart = () => useContext(CartContext);
-const Checkout = () => {
-  const { cartItems, cartTotal, clearCart } = useCart();
-  const navigate = useNavigate();
-  const [isProcessing, setIsProcessing] = useState(false);
 
-  const [formData, setFormData] = useState({
-    name: "",
-    email: "",
-    address: "",
-    city: "",
-  });
+// 3. Export the provider
+export const CartProvider = ({ children }) => {
+  const [cartItems, setCartItems] = useState([]);
 
-  const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-  };
+  // Add a product to cart, or increment quantity if it already exists
+  const addToCart = useCallback((product) => {
+    setCartItems((prev) => {
+      const existing = prev.find((item) => item.id === product.id);
+      if (existing) {
+        // Respect stock limit
+        if (existing.quantity >= product.piece) return prev;
+        return prev.map((item) =>
+          item.id === product.id
+            ? { ...item, quantity: item.quantity + 1 }
+            : item
+        );
+      }
+      return [...prev, { ...product, quantity: 1 }];
+    });
+  }, []);
 
-  const handleCheckout = async (e) => {
-    e.preventDefault();
-    if (cartItems.length === 0) return alert("Your cart is empty!");
+  // Remove a product entirely from the cart
+  const removeFromCart = useCallback((productId) => {
+    setCartItems((prev) => prev.filter((item) => item.id !== productId));
+  }, []);
 
-    setIsProcessing(true);
-
-    try {
-      // Prepared as a batch operation to ensure data consistency
-      const batch = writeBatch(db);
-
-      // 1. Create the new Order Document
-      const orderRef = await addDoc(collection(db, "orders"), {
-        customerInfo: formData,
-        items: cartItems.map((item) => ({
-          productId: item.id,
-          name: item.name,
-          price: item.price,
-          quantity: item.quantity,
-        })),
-        totalAmount: cartTotal,
-        status: "Pending",
-        createdAt: serverTimestamp(),
-      });
-
-      // 2. Loop through cart items and decrement stock in the Products collection
-      // This fulfills the Inventory Sync requirement
-      cartItems.forEach((item) => {
-        const productRef = doc(db, "products", item.id);
-        batch.update(productRef, {
-          stockQuantity: item.stockQuantity - item.quantity,
-        });
-      });
-
-      // 3. Commit the batch
-      await batch.commit();
-
-      clearCart();
-      alert(`Order placed successfully! Order ID: ${orderRef.id}`);
-      navigate("/shop");
-    } catch (error) {
-      console.error("Error processing checkout: ", error);
-      alert("There was an error processing your order.");
-    } finally {
-      setIsProcessing(false);
-    }
-  };
-
-  if (cartItems.length === 0) {
-    return (
-      <div className="text-center py-20 text-xl font-bold">
-        Your cart is empty.
-      </div>
+  // Increment (+1) or decrement (-1) the quantity of an item
+  // Removes the item if quantity would drop to 0
+  const updateQuantity = useCallback((productId, delta) => {
+    setCartItems((prev) =>
+      prev
+        .map((item) =>
+          item.id === productId
+            ? { ...item, quantity: item.quantity + delta }
+            : item
+        )
+        .filter((item) => item.quantity > 0)
     );
-  }
+  }, []);
+
+  // Clear all items from the cart
+  const clearCart = useCallback(() => {
+    setCartItems([]);
+  }, []);
+
+  // Derived total price
+  const cartTotal = cartItems.reduce(
+    (sum, item) => sum + item.price * item.quantity,
+    0
+  );
+
+  // Total number of individual items (for badge count)
+  const cartCount = cartItems.reduce((sum, item) => sum + item.quantity, 0);
 
   return (
-    <div className="max-w-3xl mx-auto px-4 py-12">
-      <h1 className="text-3xl font-bold text-slate-900 mb-8">Checkout</h1>
-
-      <div className="bg-white border border-slate-200 rounded-lg p-6 shadow-sm">
-        <div className="mb-8 border-b border-slate-200 pb-4">
-          <h2 className="text-xl font-semibold mb-2">Order Summary</h2>
-          <p className="text-slate-600">Total Items: {cartItems.length}</p>
-          <p className="text-2xl font-bold text-blue-600 mt-2">
-            Total: ${cartTotal.toFixed(2)}
-          </p>
-        </div>
-
-        <form onSubmit={handleCheckout} className="space-y-4">
-          <h2 className="text-xl font-semibold mb-4">Shipping Details</h2>
-
-          <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">
-              Full Name
-            </label>
-            <input
-              required
-              type="text"
-              name="name"
-              onChange={handleChange}
-              className="w-full px-3 py-2 border rounded-md outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">
-              Email
-            </label>
-            <input
-              required
-              type="email"
-              name="email"
-              onChange={handleChange}
-              className="w-full px-3 py-2 border rounded-md outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">
-              Address
-            </label>
-            <input
-              required
-              type="text"
-              name="address"
-              onChange={handleChange}
-              className="w-full px-3 py-2 border rounded-md outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">
-              City
-            </label>
-            <input
-              required
-              type="text"
-              name="city"
-              onChange={handleChange}
-              className="w-full px-3 py-2 border rounded-md outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
-
-          <button
-            type="submit"
-            disabled={isProcessing}
-            className="w-full mt-6 bg-slate-900 text-white py-3 rounded-md font-bold hover:bg-blue-600 transition-colors disabled:bg-slate-400"
-          >
-            {isProcessing ? "Processing Order..." : "Confirm & Pay"}
-          </button>
-        </form>
-      </div>
-    </div>
+    <CartContext.Provider
+      value={{
+        cartItems,
+        cartTotal,
+        cartCount,
+        addToCart,
+        removeFromCart,
+        updateQuantity,
+        clearCart,
+      }}
+    >
+      {children}
+    </CartContext.Provider>
   );
 };
-
-export default Checkout;

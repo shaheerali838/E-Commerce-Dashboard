@@ -1,9 +1,13 @@
-import React from "react";
+import React, { useState } from "react";
 import { IoIosNotifications } from "react-icons/io";
 import { CgProfile } from "react-icons/cg";
 import { CiSearch } from "react-icons/ci";
+import { useAuth } from "../context/AuthContext";
+import { LogOut } from "lucide-react";
 
 const Navbar = () => {
+  const { currentUser, logout } = useAuth();
+  const [showProfileMenu, setShowProfileMenu] = useState(false);
   return (
     <nav className="sticky top-0 h-16 z-50 w-full px-6 py-2.5 bg-white border-b border-slate-200 flex items-center justify-between">
       {/* Brand Section */}
@@ -60,21 +64,45 @@ const Navbar = () => {
         <div className="h-5 w-px bg-slate-200"></div>
 
         {/* User Profile & Role */}
-        <div className="flex items-center gap-3 cursor-pointer group">
-          <div className="flex flex-col text-right sm:block">
-            <span className="text-sm font-medium text-slate-900 leading-none mb-1">
-              Shaheer Ali
-            </span>
-            <select className="text-[11px] font-semibold text-slate-500 bg-transparent outline-none cursor-pointer group-hover:text-blue-600 transition-colors uppercase tracking-wider">
-              <option value="admin">Administrator</option>
-              <option value="user">Standard User</option>
-            </select>
+        <div className="relative">
+          <div 
+            className="flex items-center gap-3 cursor-pointer group"
+            onClick={() => setShowProfileMenu(!showProfileMenu)}
+          >
+            <div className="flex flex-col text-right sm:block">
+              <span className="text-sm font-medium text-slate-900 leading-none mb-1">
+                {currentUser?.name || currentUser?.email?.split('@')[0] || "Admin"}
+              </span>
+              <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block">
+                {currentUser?.role || "Administrator"}
+              </span>
+            </div>
+
+            <div className="h-9 w-9 rounded-md bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-600 overflow-hidden group-hover:border-slate-300 transition-colors">
+              {currentUser?.photoURL ? (
+                <img src={currentUser.photoURL} alt="Profile" className="h-full w-full object-cover" />
+              ) : (
+                <span className="font-bold text-sm">
+                  {(currentUser?.name || currentUser?.email || "A").charAt(0).toUpperCase()}
+                </span>
+              )}
+            </div>
           </div>
 
-          {/* Square avatar container looks more corporate than a full circle */}
-          <div className="h-9 w-9 rounded-md bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-600 overflow-hidden group-hover:border-slate-300 transition-colors">
-            <CgProfile className="h-6 w-6 mt-1" />
-          </div>
+          {/* Profile Dropdown Menu */}
+          {showProfileMenu && (
+            <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg border border-slate-200 py-1 z-50">
+              <button
+                onClick={() => {
+                  setShowProfileMenu(false);
+                  logout();
+                }}
+                className="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-slate-50 transition-colors"
+              >
+                <LogOut size={16} /> Logout
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </nav>
